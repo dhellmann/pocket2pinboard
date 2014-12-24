@@ -14,8 +14,10 @@
 from __future__ import print_function
 
 import argparse
+import ConfigParser
 import datetime
 import logging
+import os
 import sys
 
 import pinboard
@@ -25,7 +27,37 @@ from pocket2pinboard import keys
 from pocket2pinboard import retrieve
 
 
+def read_config(config_name):
+    config = ConfigParser.SafeConfigParser()
+    config.read(config_name)
+    if not config.has_section('pinboard'):
+        config.add_section('pinboard')
+    if not config.has_option('pinboard', 'token'):
+        config.set('pinboard', 'token', '')
+    if not config.has_section('history'):
+        config.add_section('history')
+    if not config.has_option('history', 'since'):
+        config.set('history', 'since', '')
+    return config
+
+
+def save_config(config, config_name, since=None):
+    if since:
+        config.set('history', 'since', str(since))
+    with open(config_name, 'w') as f:
+        config.write(f)
+
+
 def main():
+    # Load the configuration file.
+    config_name = os.path.expanduser('~/.pocket2pinboardrc')
+    config = read_config(config_name)
+    since = config.get('history', 'since')
+    pinboard_token = config.get('pinboard', 'token')
+    if not pinboard_token:
+        # Save the skeleton file to make editing it easier later.
+        save_config(config, config_name)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-v',
                         dest='verbose',
@@ -40,10 +72,13 @@ def main():
                         )
     parser.add_argument(
         '--pinboard-token', '-t',
+        default=pinboard_token,
         help='pinboard.in API token',
-        required=True,
     )
     args = parser.parse_args()
+
+    if not args.pinboard_token:
+        parser.error('Please update the pinboard token in %s or provide one via -t' % config_name)
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(
@@ -63,17 +98,14 @@ def main():
 
     pinboard_client = pinboard.Pinboard(args.pinboard_token)
 
-    # FIXME: Need to read 'since' value from config file, then update
-    # the file when we are done.
-    since = None
-    # if args.all:
-    #     since = None
-    # else:
-    #     since = '1419434347'
+    if args.all:
+        since = None
 
     items_response = retrieve.get_items(keys.consumer_key, access_token, since)
-    print(items_response['since'])
     items = items_response['list']
+    # If the list is empty, we get a list. If it has values, it is a
+    # dictionary mapping ids to contents. We want to iterate over all
+    # of them, so just make a list.
     if isinstance(items, dict):
         items = items.values()
 
@@ -82,13 +114,24 @@ def main():
         if not tags:
             # Skip anything that isn't tagged.
             continue
-        print('%s: %s' % (i['resolved_title'], tags))
+        title = (i.get('resolved_title') or u'No title').encode('utf-8')
         time_updated = datetime.datetime.fromtimestamp(float(i['time_updated']))
+        extended = i.get('excerpt', u'').encode('utf-8')
+        print('%s: %s' % (title, tags))
+        # print(dict(
+        #     url=i['given_url'],
+        #     description=i['resolved_title'],
+        #     #extended=i['excerpt'],
+        #     tags=u', '.join(tags),
+        #     date=str(time_updated.date()),
+        # ))
         pinboard_client.posts.add(
             url=i['given_url'],
-            description=i['resolved_title'],
-            #extended=i['excerpt'],
+            description=title,
+            extended=extended,
             tags=u', '.join(tags),
             date=str(time_updated.date()),
         )
         print('')
+
+    save_config(config, config_name, items_response['since'])
