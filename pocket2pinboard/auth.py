@@ -112,5 +112,5 @@ def authenticate(consumer_key):
     }
     response = requests.post(authorize_url, data=payload, headers=headers)
     if response.status_code == 200:
-        return response.json()
+        return response.json()['access_token']
     raise AuthError(response.status_code, response.text)
