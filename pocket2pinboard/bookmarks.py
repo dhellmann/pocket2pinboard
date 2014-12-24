@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import logging
 
 LOG = logging.getLogger(__name__)
@@ -19,25 +18,16 @@ LOG = logging.getLogger(__name__)
 
 def update(pinboard_client, items):
     for i in items:
-        tags = i.get('tags', {}).keys()
-        if not tags:
+        if not i.tags:
             # Skip anything that isn't tagged.
             continue
-        title = (i.get('resolved_title') or u'No title').encode('utf-8')
-        time_updated = datetime.datetime.fromtimestamp(
-            float(i['time_updated'])
-        )
-        extended = i.get('excerpt', u'').encode('utf-8')
-        LOG.info('%s: %s' % (title, tags))
-        LOG.debug('URL %s', i['given_url'])
-        LOG.debug('Description: %r', title)
-        LOG.debug('Tags: %r', tags)
-        LOG.debug('Date: %s', time_updated.date())
+        LOG.info('%s: %s' % (i.title, i.tags))
+        LOG.debug('%r', i)
         pinboard_client.posts.add(
-            url=i['given_url'],
-            description=title,
-            extended=extended,
-            tags=u', '.join(tags),
-            date=str(time_updated.date()),
+            url=i.url,
+            description=i.title,
+            extended=i.excerpt,
+            tags=u', '.join(i.tags),
+            date=str(i.time_updated.date()),
         )
         LOG.debug('')

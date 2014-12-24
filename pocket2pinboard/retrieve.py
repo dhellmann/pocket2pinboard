@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
+import datetime
 import logging
 
 import requests
@@ -23,6 +25,28 @@ _url = 'https://getpocket.com/v3/get'
 _headers = {
     'X-Accept': 'application/json',
 }
+
+
+PocketItem = collections.namedtuple(
+    'PocketItem',
+    ['url', 'title', 'excerpt', 'time_updated', 'tags']
+)
+
+
+def make_pocket_item(i):
+    tags = i.get('tags', {}).keys()
+    title = (i.get('resolved_title') or u'No title').encode('utf-8')
+    time_updated = datetime.datetime.fromtimestamp(
+        float(i['time_updated'])
+    )
+    excerpt = i.get('excerpt', u'').encode('utf-8')
+    return PocketItem(
+        url=i['given_url'],
+        title=title,
+        excerpt=excerpt,
+        time_updated=time_updated,
+        tags=tags,
+    )
 
 
 def get_items(consumer_key, access_token, since):
@@ -44,6 +68,6 @@ def get_items(consumer_key, access_token, since):
         # of them, so just make a list of the values.
         if isinstance(items, dict):
             items = list(items.values())
-        return (items, new_since)
+        return ((make_pocket_item(i) for i in items), new_since)
     raise RuntimeError('could not retrieve: %s: %s' %
                        (response.status_code, response.text))
