@@ -24,7 +24,9 @@ def update(pinboard_client, items):
             # Skip anything that isn't tagged.
             continue
         title = (i.get('resolved_title') or u'No title').encode('utf-8')
-        time_updated = datetime.datetime.fromtimestamp(float(i['time_updated']))
+        time_updated = datetime.datetime.fromtimestamp(
+            float(i['time_updated'])
+        )
         extended = i.get('excerpt', u'').encode('utf-8')
         LOG.info('%s: %s' % (title, tags))
         LOG.debug('URL %s', i['given_url'])

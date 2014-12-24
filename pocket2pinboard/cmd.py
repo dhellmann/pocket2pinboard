@@ -39,7 +39,7 @@ def main():
     pinboard_token = cfg.get('pinboard', 'token')
     if not pinboard_token:
         # Save the skeleton file to make editing it easier later.
-        save_config(cfg, config_name)
+        config.save(cfg, config_name)
 
     # Handle command line arguments.
     parser = argparse.ArgumentParser()
@@ -63,7 +63,9 @@ def main():
 
     # Make sure we know how to talk to pinboard.in.
     if not args.pinboard_token:
-        parser.error('Please update the pinboard token in %s or provide one via -t' % config_name)
+        parser.error(
+            'Please update the pinboard token in %s or provide one via -t'
+            % config_name)
 
     # Set up logging for use as output channel.
     level = logging.DEBUG if args.verbose else logging.INFO

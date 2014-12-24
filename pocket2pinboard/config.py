@@ -12,7 +12,6 @@
 # limitations under the License.
 
 import ConfigParser
-import os
 
 
 def read(config_name):

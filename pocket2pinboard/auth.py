@@ -11,9 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import BaseHTTPServer
 import logging
 import threading
+import urllib
 import webbrowser
 
 import requests
@@ -24,12 +25,13 @@ LOG = logging.getLogger(__name__)
 
 class AuthError(Exception):
     def __init__(self, status_code, error_msg):
-        super(AuthError, self).__init__('Authentication failed: %s: %s' % (status_code, error_msg))
+        super(AuthError, self).__init__('Authentication failed: %s: %s'
+                                        % (status_code, error_msg))
         self.status_code = status_code
         self.error_msg = error_msg
 
 
-class AuthResponseHandler(BaseHTTPRequestHandler):
+class AuthResponseHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
         self.send_response(200)
@@ -54,10 +56,9 @@ class AuthResponseHandler(BaseHTTPRequestHandler):
         return
 
 
-
-
 def _start_auth_server():
-    server = HTTPServer(('127.0.0.1', 0), AuthResponseHandler)
+    server = BaseHTTPServer.HTTPServer(('127.0.0.1', 0),
+                                       AuthResponseHandler)
     ip, port = server.server_address
     url = 'http://%s:%s' % (ip, port)
     responded = threading.Event()
@@ -67,7 +68,6 @@ def _start_auth_server():
                          )
     t.setDaemon(True)
     t.start()
-
 
     def _wait_for_auth_response():
         LOG.info('waiting for application authentication')
@@ -97,8 +97,12 @@ def authenticate(consumer_key):
     request_code = response.json()['code']
 
     # Ask the user for permission for the app to access their account.
-    auth_url = 'https://getpocket.com/auth/authorize?request_token='\
-               '%s&redirect_uri=%s' % (request_code, redirect_url)
+    auth_url_base = 'https://getpocket.com/auth/authorize'
+    auth_url_params = urllib.urlencode({
+        'request_token': request_code,
+        'redirect_uri': redirect_url,
+    })
+    auth_url = auth_url_base + '?' + auth_url_params
     webbrowser.open(auth_url)
 
     # Wait for the redirect URL to be accessed in the browser.
