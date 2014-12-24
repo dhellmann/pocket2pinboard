@@ -86,26 +86,22 @@ def main():
         # Get a list of the pocket items we are going to process.
         if args.all:
             since = None
-        elif since:
+        if since:
             LOG.debug('loading pocket items since %s',
                       datetime.datetime.fromtimestamp(float(since)))
         else:
-            LOG.debug('fetching latest pocket items')
+            LOG.debug('fetching all pocket items')
 
-        items_response = retrieve.get_items(keys.consumer_key, access_token,
-                                            since)
-        new_since = items_response['since']
-        items = items_response['list']
-        # If the list is empty, we get a list. If it has values, it is a
-        # dictionary mapping ids to contents. We want to iterate over all
-        # of them, so just make a list.
-        if isinstance(items, dict):
-            items = items.values()
+        items, new_since = retrieve.get_items(
+            keys.consumer_key,
+            access_token,
+            since,
+        )
 
         # Send the pocket items to pinboard.
         bookmarks.update(pinboard_client, items)
 
-        # Remember where we left off.
+        # Remember the new value for 'since'.
         config.save(cfg, config_name, new_since)
     except Exception as e:
         if args.verbose:

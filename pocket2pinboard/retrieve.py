@@ -36,6 +36,14 @@ def get_items(consumer_key, access_token, since):
         payload['since'] = since
     response = requests.post(_url, data=payload, headers=_headers)
     if response.status_code == 200:
-        return response.json()
+        data = response.json()
+        new_since = data['since']
+        items = data['list']
+        # If the list is empty, we get a list. If it has values, it is a
+        # dictionary mapping ids to contents. We want to iterate over all
+        # of them, so just make a list of the values.
+        if isinstance(items, dict):
+            items = list(items.values())
+        return (items, new_since)
     raise RuntimeError('could not retrieve: %s: %s' %
                        (response.status_code, response.text))
