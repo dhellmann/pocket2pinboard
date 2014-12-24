@@ -23,7 +23,7 @@ class AuthResponseHandler(BaseHTTPRequestHandler):
         <body>
         <h1>pocket2pinboard</h1>
         <p>You may close this window now.</p>
-        <script>
+        <script type="text/javascript">
         function closeMe() {
             window.close();
         }
