@@ -63,10 +63,14 @@ def main():
 
     pinboard_client = pinboard.Pinboard(args.pinboard_token)
 
-    if args.all:
-        since = None
-    else:
-        since = '1419434347'
+    # FIXME: Need to read 'since' value from config file, then update
+    # the file when we are done.
+    since = None
+    # if args.all:
+    #     since = None
+    # else:
+    #     since = '1419434347'
+
     items_response = retrieve.get_items(keys.consumer_key, access_token, since)
     print(items_response['since'])
     items = items_response['list']
