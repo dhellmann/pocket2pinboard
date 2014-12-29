@@ -41,7 +41,7 @@ def make_pocket_item(i):
     )
     excerpt = i.get('excerpt', u'').encode('utf-8')
     return PocketItem(
-        url=i['given_url'],
+        url=i['resolved_url'],
         title=title,
         excerpt=excerpt,
         time_updated=time_updated,
