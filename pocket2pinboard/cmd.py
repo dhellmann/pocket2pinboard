@@ -95,10 +95,10 @@ def main():
         if args.all:
             since = None
         if since:
-            LOG.debug('loading pocket items since %s',
-                      datetime.datetime.fromtimestamp(float(since)))
+            LOG.info('loading pocket items since %s',
+                     datetime.datetime.fromtimestamp(float(since)))
         else:
-            LOG.debug('fetching all pocket items')
+            LOG.info('fetching all pocket items')
 
         items, new_since = retrieve.get_items(
             keys.consumer_key,
