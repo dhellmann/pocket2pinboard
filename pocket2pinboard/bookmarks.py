@@ -21,7 +21,7 @@ def update(pinboard_client, items):
         if not i.tags:
             # Skip anything that isn't tagged.
             continue
-        LOG.info('%s: %s' % (i.title, i.tags))
+        LOG.info('%s - %s: %s' % (i.time_updated.date(), i.title, i.tags))
         LOG.debug('%r', i)
         pinboard_client.posts.add(
             url=i.url,
