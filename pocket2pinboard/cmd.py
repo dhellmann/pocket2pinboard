@@ -21,6 +21,8 @@ import sys
 
 import pinboard
 
+import pkg_resources
+
 from pocket2pinboard import auth
 from pocket2pinboard import bookmarks
 from pocket2pinboard import config
@@ -43,6 +45,12 @@ def main():
 
     # Handle command line arguments.
     parser = argparse.ArgumentParser()
+    dist = pkg_resources.get_distribution('pocket2pinboard')
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {0}'.format(dist.version),
+    )
     parser.add_argument('-v',
                         dest='verbose',
                         action='store_true',
