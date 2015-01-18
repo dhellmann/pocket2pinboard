@@ -19,6 +19,7 @@ import webbrowser
 
 import requests
 
+from . import keys
 
 LOG = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ def _start_auth_server():
     return (url, _wait_for_auth_response)
 
 
-def authenticate(consumer_key):
+def authenticate():
     # Start the HTTP server in a separate thread here so it is running
     # when we ask for the request token. If the user has already logged in
     # and permitted access to the app the redirect is called right away
@@ -89,7 +90,7 @@ def authenticate(consumer_key):
         'X-Accept': 'application/json',
     }
     payload = {
-        'consumer_key': consumer_key,
+        'consumer_key': keys.consumer_key,
         'redirect_uri': redirect_url,
     }
     request_token_url = 'https://getpocket.com/v3/oauth/request'
@@ -111,7 +112,7 @@ def authenticate(consumer_key):
     # Check if we were given permission to access the account.
     authorize_url = 'https://getpocket.com/v3/oauth/authorize'
     payload = {
-        'consumer_key': consumer_key,
+        'consumer_key': keys.consumer_key,
         'code': request_code,
     }
     response = requests.post(authorize_url, data=payload, headers=headers)

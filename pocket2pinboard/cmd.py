@@ -25,7 +25,6 @@ import pkg_resources
 
 from pocket2pinboard import bookmarks
 from pocket2pinboard import config
-from pocket2pinboard import keys
 from pocket2pinboard import pocket
 
 LOG = logging.getLogger(__name__)
@@ -87,7 +86,7 @@ def main():
     try:
         # Connect to both services early to find authentication
         # issues.
-        access_token = pocket.authenticate(keys.consumer_key)
+        access_token = pocket.authenticate()
         pinboard_client = pinboard.Pinboard(args.pinboard_token)
 
         # Get a list of the pocket items we are going to process.
@@ -100,7 +99,6 @@ def main():
             LOG.info('fetching all pocket items')
 
         items, new_since = pocket.get_items(
-            keys.consumer_key,
             access_token,
             since,
         )

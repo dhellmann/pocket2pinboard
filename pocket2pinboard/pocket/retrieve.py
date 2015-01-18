@@ -17,6 +17,8 @@ import logging
 
 import requests
 
+from . import keys
+
 
 LOG = logging.getLogger(__name__)
 
@@ -52,9 +54,9 @@ def _make_pocket_item(i):
     )
 
 
-def get_items(consumer_key, access_token, since):
+def get_items(access_token, since):
     payload = {
-        'consumer_key': consumer_key,
+        'consumer_key': keys.consumer_key,
         'access_token': access_token,
         'state': 'all',
         'detailType': 'complete',
