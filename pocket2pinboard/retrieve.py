@@ -33,16 +33,16 @@ PocketItem = collections.namedtuple(
 )
 
 
-def make_pocket_item(i):
+def _make_pocket_item(i):
     url = i.get('resolved_url')
     if not url:
         return None
     tags = i.get('tags', {}).keys()
-    title = (i.get('resolved_title') or u'No title').encode('utf-8')
+    title = (i.get('resolved_title') or u'No title')
     time_updated = datetime.datetime.fromtimestamp(
         float(i.get('time_updated', 0))
     )
-    excerpt = i.get('excerpt', u'').encode('utf-8')
+    excerpt = i.get('excerpt', u'')
     return PocketItem(
         url=url,
         title=title,
@@ -71,7 +71,7 @@ def get_items(consumer_key, access_token, since):
         # of them, so just make a list of the values.
         if isinstance(items, dict):
             items = list(items.values())
-        return (filter(None, (make_pocket_item(i) for i in items)),
+        return (filter(None, (_make_pocket_item(i) for i in items)),
                 new_since)
     raise RuntimeError('could not retrieve: %s: %s' %
                        (response.status_code, response.text))
