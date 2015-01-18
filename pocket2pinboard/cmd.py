@@ -37,6 +37,7 @@ def main():
     cfg = config.read(config_name)
     since = cfg.get('history', 'since')
     pinboard_token = cfg.get('pinboard', 'token')
+    pocket_token = cfg.get('pocket', 'token')
     if not pinboard_token:
         # Save the skeleton file to make editing it easier later.
         config.save(cfg, config_name)
@@ -86,7 +87,10 @@ def main():
     try:
         # Connect to both services early to find authentication
         # issues.
-        access_token = pocket.authenticate()
+        if not pocket_token:
+            pocket_token = pocket.authenticate()
+            cfg.set('pocket', 'token', pocket_token)
+            config.save(cfg, config_name)
         pinboard_client = pinboard.Pinboard(args.pinboard_token)
 
         # Get a list of the pocket items we are going to process.
@@ -99,7 +103,7 @@ def main():
             LOG.info('fetching all pocket items')
 
         items, new_since = pocket.get_items(
-            access_token,
+            pocket_token,
             since,
         )
 
