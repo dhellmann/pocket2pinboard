@@ -107,7 +107,8 @@ def main():
         bookmarks.update(pinboard_client, items)
 
         # Remember the new value for 'since'.
-        config.save(cfg, config_name, new_since)
+        cfg.set('history', 'since', str(new_since))
+        config.save(cfg, config_name)
     except Exception as e:
         if args.verbose:
             raise

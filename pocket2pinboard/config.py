@@ -14,24 +14,25 @@
 import ConfigParser
 
 
+_DEFAULTS = [
+    ('pinboard', 'token', ''),
+    ('pocket', 'token', ''),
+    ('history', 'since', ''),
+]
+
 def read(config_name):
     """Given a filename, read the configuration."""
     cfg = ConfigParser.SafeConfigParser()
     cfg.read(config_name)
-    if not cfg.has_section('pinboard'):
-        cfg.add_section('pinboard')
-    if not cfg.has_option('pinboard', 'token'):
-        cfg.set('pinboard', 'token', '')
-    if not cfg.has_section('history'):
-        cfg.add_section('history')
-    if not cfg.has_option('history', 'since'):
-        cfg.set('history', 'since', '')
+    for s, o, v in _DEFAULTS:
+        if not cfg.has_section(s):
+            cfg.add_section(s)
+        if not cfg.has_option(s, o):
+            cfg.set(s, o, v)
     return cfg
 
 
-def save(cfg, config_name, since=None):
-    """Write a new config file, including an update to 'since' if needed."""
-    if since:
-        cfg.set('history', 'since', str(since))
+def save(cfg, config_name):
+    """Write a new config file."""
     with open(config_name, 'w') as f:
         cfg.write(f)
