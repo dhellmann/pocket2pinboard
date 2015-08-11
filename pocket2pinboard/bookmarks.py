@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
+
 import logging
 
 LOG = logging.getLogger(__name__)
@@ -21,10 +23,10 @@ def update(pinboard_client, items):
         if not i.tags:
             # Skip anything that isn't tagged.
             continue
-        LOG.info(u'%s - %s: %s' % (i.time_updated.date(), i.title, i.tags))
-        LOG.debug(u'%r', i)
+        LOG.info('%s - %s: %s' % (i.time_updated.date(), i.title, i.tags))
+        LOG.debug('%r', i)
         pinboard_client.posts.add(
-            url=i.url,
+            url=i.url.encode('utf-8'),
             description=i.title.encode('utf-8'),
             extended=i.excerpt.encode('utf-8'),
             tags=u', '.join(i.tags).encode('utf-8'),
