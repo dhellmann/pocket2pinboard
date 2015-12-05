@@ -14,6 +14,8 @@
 from __future__ import unicode_literals
 
 import logging
+import time
+import urllib2
 
 LOG = logging.getLogger(__name__)
 
@@ -25,11 +27,22 @@ def update(pinboard_client, items):
             continue
         LOG.info('%s - %s: %s' % (i.time_updated.date(), i.title, i.tags))
         LOG.debug('%r', i)
-        pinboard_client.posts.add(
-            url=i.url.encode('utf-8'),
-            description=i.title.encode('utf-8'),
-            extended=i.excerpt.encode('utf-8'),
-            tags=u', '.join(i.tags).encode('utf-8'),
-            date=str(i.time_updated.date()).encode('utf-8'),
-        )
+        attempts = 3
+        while attempts > 0:
+            attempts -= 1
+            try:
+                pinboard_client.posts.add(
+                    url=i.url.encode('utf-8'),
+                    description=i.title.encode('utf-8'),
+                    extended=i.excerpt.encode('utf-8'),
+                    tags=u', '.join(i.tags).encode('utf-8'),
+                    date=str(i.time_updated.date()).encode('utf-8'),
+                )
+            except urllib2.URLError as err:
+                if not attempts:
+                    raise
+                LOG.debug('failed with error %s, trying again after pause' % err)
+                time.sleep(1)
+            else:
+                break
         LOG.debug('')
